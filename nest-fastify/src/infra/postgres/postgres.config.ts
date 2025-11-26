@@ -1,6 +1,7 @@
 import { registerAs } from '@nestjs/config'
 import { TypeOrmModuleOptions } from '@nestjs/typeorm'
 import type { LoggerOptions, LogLevel } from 'typeorm'
+import { User } from '../../modules/users/domain/user.entity'
 
 export const POSTGRES_TOKEN = 'postgres'
 
@@ -14,6 +15,7 @@ export default registerAs(POSTGRES_TOKEN, (): TypeOrmModuleOptions => {
 		database: process.env.POSTGRES_DB,
 		synchronize: process.env.TYPEORM_SYNCHRONIZE === 'true',
 		logging: parseLogLevels(process.env.TYPEORM_LOG_LEVELS),
+		entities: [User],
 	}
 })
 
