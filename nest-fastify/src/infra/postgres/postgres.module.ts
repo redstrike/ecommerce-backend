@@ -9,10 +9,7 @@ import { PostgresService } from './postgres.service'
 		ConfigModule.forFeature(postgresConfig),
 		TypeOrmModule.forRootAsync({
 			imports: [ConfigModule],
-			useFactory: (configService: ConfigService) => ({
-				...configService.get(POSTGRES_TOKEN),
-				entities: [],
-			}),
+			useFactory: (configService: ConfigService) => configService.getOrThrow(POSTGRES_TOKEN),
 			inject: [ConfigService],
 		}),
 	],
