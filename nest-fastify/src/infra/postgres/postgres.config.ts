@@ -1,5 +1,6 @@
 import { registerAs } from '@nestjs/config'
 import { TypeOrmModuleOptions } from '@nestjs/typeorm'
+import type { PoolConfig } from 'pg'
 import type { LoggerOptions, LogLevel } from 'typeorm'
 import { User } from '../../modules/users/domain/user.entity'
 
@@ -16,6 +17,12 @@ export default registerAs(POSTGRES_TOKEN, (): TypeOrmModuleOptions => {
 		synchronize: process.env.TYPEORM_SYNCHRONIZE === 'true',
 		logging: parseLogLevels(process.env.TYPEORM_LOG_LEVELS),
 		entities: [User],
+		poolSize: Number(process.env.POSTGRES_POOL_SIZE) || 10,
+		extra: {
+			min: Number(process.env.POSTGRES_MIN_POOL_SIZE) || 1,
+			idleTimeoutMillis: 30000,
+			connectionTimeoutMillis: 2000,
+		} as PoolConfig,
 	}
 })
 
