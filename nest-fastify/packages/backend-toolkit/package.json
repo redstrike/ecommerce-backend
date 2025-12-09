@@ -1,0 +1,35 @@
+{
+	"name": "@redstrike/backend-toolkit",
+	"version": "0.1.0",
+	"description": "redstrike's personal backend toolkit for Node.js/Bun/Deno projects.",
+	"author": "Tung Nguyen <https://www.linkedin.com/in/redstrike/>",
+	"private": true,
+	"license": "MIT",
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"prepublishOnly": "pnpm build"
+	},
+	"keywords": [
+		"backend",
+		"toolkit",
+		"typescript",
+		"env",
+		"utilities"
+	],
+	"engines": {
+		"node": ">=24.11.1"
+	},
+	"devDependencies": {
+		"typescript": "^5.9.3"
+	}
+}

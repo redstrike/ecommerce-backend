@@ -1,11 +1,11 @@
+import { InjectRepository } from '@mikro-orm/nestjs'
+import { EntityManager, EntityRepository } from '@mikro-orm/postgresql'
 import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common'
-import { InjectRepository } from '@nestjs/typeorm'
+import { ConfigService } from '@nestjs/config'
 import { hash, verify } from '@node-rs/argon2'
-import { Repository } from 'typeorm'
-import { CreateUserDto } from './dto/create-user.dto'
 import { UserRole } from './domain/user-role.enum'
 import { User } from './domain/user.entity'
-import { ConfigService } from '@nestjs/config'
+import { CreateUserDto } from './dto/create-user.dto'
 
 @Injectable()
 export class UsersService {
@@ -13,8 +13,9 @@ export class UsersService {
 
 	constructor(
 		@InjectRepository(User)
-		private usersRepository: Repository<User>,
-		private configService: ConfigService,
+		private readonly userRepository: EntityRepository<User>,
+		private readonly em: EntityManager,
+		private readonly configService: ConfigService,
 	) {}
 
 	async hashPassword(password: string): Promise<string> {
@@ -27,8 +28,9 @@ export class UsersService {
 
 	async create(email: string, passwordPlain: string, roles: string[] = [UserRole.CUSTOMER], permissions: string[] = []): Promise<User> {
 		const hashedPassword = await this.hashPassword(passwordPlain)
-		const user = this.usersRepository.create({ email, password: hashedPassword, roles, permissions })
-		return this.usersRepository.save(user)
+		const user = this.userRepository.create({ email, password: hashedPassword, roles, permissions })
+		await this.em.persistAndFlush(user)
+		return user
 	}
 
 	async createSuperAdmin(dto: CreateUserDto, initializationKey: string): Promise<User> {
@@ -54,19 +56,17 @@ export class UsersService {
 	}
 
 	async findByEmail(email: string): Promise<User | null> {
-		return this.usersRepository.findOne({ where: { email } })
+		return this.userRepository.findOne({ email })
 	}
 
 	async findById(id: string): Promise<User | null> {
-		return this.usersRepository.findOne({ where: { id } })
+		return this.userRepository.findOne({ id })
 	}
 
 	async hasSuperAdmin(): Promise<boolean> {
-		const superAdmin = await this.usersRepository
-			.createQueryBuilder('user')
-			.where(':role = ANY(user.roles)', { role: UserRole.SUPER_ADMIN })
-			.getOne()
-
-		return !!superAdmin
+		const count = await this.userRepository.count({
+			roles: { $contains: [UserRole.SUPER_ADMIN] },
+		})
+		return count > 0
 	}
 }

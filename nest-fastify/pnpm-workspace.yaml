@@ -1,4 +1,8 @@
+packages:
+  - 'packages/*'
+
 onlyBuiltDependencies:
   - '@nestjs/core'
   - argon2
   - unrs-resolver
+

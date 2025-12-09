@@ -54,3 +54,7 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Ignore `node_modules` and `dist` directories in custom packages
+/packages/backend-toolkit/node_modules
+/packages/backend-toolkit/dist
