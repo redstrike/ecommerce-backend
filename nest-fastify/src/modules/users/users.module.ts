@@ -1,12 +1,12 @@
+import { MikroOrmModule } from '@mikro-orm/nestjs'
 import { Module } from '@nestjs/common'
-import { TypeOrmModule } from '@nestjs/typeorm'
 import { User } from './domain/user.entity'
 import { UsersService } from './users.service'
 
 import { UsersController } from './users.controller'
 
 @Module({
-	imports: [TypeOrmModule.forFeature([User])],
+	imports: [MikroOrmModule.forFeature([User])],
 	controllers: [UsersController],
 	providers: [UsersService],
 	exports: [UsersService], // Export UsersService for use in other modules (e.g., AuthModule)

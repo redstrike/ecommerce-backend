@@ -1,14 +1,15 @@
+import { MikroORM } from '@mikro-orm/core'
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
-import { DataSource } from 'typeorm'
 
 @Injectable()
 export class PostgresService implements OnModuleInit {
 	private readonly logger = new Logger(PostgresService.name)
 
-	constructor(private dataSource: DataSource) {}
+	constructor(private readonly orm: MikroORM) {}
 
-	onModuleInit() {
-		if (this.dataSource.isInitialized) {
+	async onModuleInit() {
+		const isConnected = await this.orm.isConnected()
+		if (isConnected) {
 			this.logger.log('Postgres connected successfully.')
 		} else {
 			this.logger.error('Failed to connect to Postgres.')
