@@ -1,0 +1,7 @@
+{
+  "rules": {
+    "typescript/no-explicit-any": "off",
+    "typescript/no-unsafe-argument": "warn",
+    "typescript/no-floating-promises": "warn"
+  }
+}
