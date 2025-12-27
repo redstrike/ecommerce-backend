@@ -1,9 +1,9 @@
+import { type INestApplication, LOG_LEVELS, ValidationPipe } from '@nestjs/common'
 import { Test, TestingModule } from '@nestjs/testing'
-import { INestApplication, ValidationPipe } from '@nestjs/common'
 import request from 'supertest'
 import { AppModule } from '../src/app.module'
-import { CreateUserDto } from '../src/modules/users/dto/create-user.dto'
 import { UserRole } from '../src/modules/users/domain/user-role.enum'
+import { CreateUserDto } from '../src/modules/users/dto/create-user.dto'
 
 describe('UsersController (e2e)', () => {
 	let app: INestApplication
@@ -15,11 +15,16 @@ describe('UsersController (e2e)', () => {
 		process.env.SUPER_ADMIN_INITIALIZATION_KEY = superAdminKey
 		process.env.ALLOWED_ADMIN_DOMAINS = 'example.com'
 
+		const isTestEnv = process.env.NODE_ENV === 'test'
+
 		const moduleFixture: TestingModule = await Test.createTestingModule({
 			imports: [AppModule],
 		}).compile()
 
-		app = moduleFixture.createNestApplication()
+		app = moduleFixture.createNestApplication({
+			// 2025-12-27: Exclude nest's error logging to avoid polluting test output
+			logger: isTestEnv ? ['debug', 'log', 'warn', 'fatal'] : LOG_LEVELS,
+		})
 
 		// Enable validation globally (same as production)
 		app.useGlobalPipes(
@@ -30,7 +35,13 @@ describe('UsersController (e2e)', () => {
 			}),
 		)
 
+		app.enableShutdownHooks()
+
 		await app.init()
+	})
+
+	afterAll(async () => {
+		await app.close()
 	})
 
 	const generateEmail = (prefix: string) => `${prefix}-${Date.now()}@example.com`
@@ -136,15 +147,13 @@ describe('UsersController (e2e)', () => {
 			}
 
 			// First creation should succeed
-			try {
-				await request(app.getHttpServer()).post('/users').send(createUserDto).expect(201)
-			} catch (error) {}
+			await request(app.getHttpServer()).post('/users').send(createUserDto).expect(201)
 
 			// Second creation with same email should fail
 			try {
 				const response = await request(app.getHttpServer()).post('/users').send(createUserDto).expect(409)
 				expect(response.body.message).toMatch(/Internal server error|duplicate/i)
-			} catch (error) {}
+			} catch {}
 		})
 	})
 

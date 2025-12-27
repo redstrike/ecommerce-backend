@@ -18,6 +18,8 @@ async function bootstrap() {
 	// Enable password exclusion globally
 	app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)))
 
+	app.enableShutdownHooks()
+
 	await app.listen(process.env.PORT ?? 3000, '127.0.0.1')
 }
 
